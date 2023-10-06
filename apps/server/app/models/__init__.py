@@ -1,4 +1,2 @@
-from flask_sqlalchemy.model import DefaultMeta
+"""A subpackage for defining database tables for the application"""
 from app.extensions import db
-
-BaseModel: DefaultMeta = db.Model

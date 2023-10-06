@@ -11,18 +11,13 @@ app: Flask = create_app(config_name)
 
 
 @app.cli.command()
-def pick():
-    print("ehh")
-    app.app_context().push()
-
-
-@app.cli.command()
 def test() -> None:
     """Run the unit tests."""
-    import unittest
+    import pytest
 
-    tests = unittest.TestLoader().discover("tests")
-    unittest.TextTestRunner(verbosity=2).run(tests)
+    result_code = pytest.main(["-v", "tests"])
+    if result_code != 0:
+        raise SystemExit(result_code)
 
 
 if __name__ == "__main__":

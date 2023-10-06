@@ -2,3 +2,4 @@ venv/
 .env
 .dmypy.json
 __pycache__/
+*db
