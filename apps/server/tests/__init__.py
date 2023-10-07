@@ -1,6 +1,5 @@
 import unittest
 from app import create_app, db
-from config import TestingConfig
 
 
 class BaseTestCase(unittest.TestCase):
