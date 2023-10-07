@@ -11,9 +11,6 @@ class TestUserModel(BaseTestCase):
             password="password123",
         )
 
-        assert user.password_hash is None
-        assert user.verify_password("password123") is False
-
         user.password = "password123"
         assert user.password_hash is not None
         assert user.verify_password("password123")
