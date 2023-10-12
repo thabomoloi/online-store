@@ -1,6 +1,6 @@
 from tests import BaseTestCase
 from app.models import db
-from app.models.user import User, Role, Address
+from app.models.users import User, Role, Address
 from sqlalchemy.exc import IntegrityError
 
 
@@ -85,14 +85,14 @@ class TestAddressModel(BaseTestCase):
             city="City",
             postal_code="1234",
         )
-        self.assertTrue(address1.to_oneline() == "123 Street, Suburb, City, 1234")
+        self.assertTrue(address1.formatted() == "123 Street, Suburb, City, 1234")
 
         address2 = Address(
             street="123 Street",
             city="City",
             postal_code="1234",
         )
-        self.assertTrue(address2.to_oneline() == "123 Street, City, 1234")
+        self.assertTrue(address2.formatted() == "123 Street, City, 1234")
 
     def test_add_address_data_not_null(self):
         address = Address(
@@ -102,6 +102,7 @@ class TestAddressModel(BaseTestCase):
             suburb="Suburb",
             city="City",
             postal_code="1234",
+            user_id=self.user.id,
         )
         db.session.add(address)
         db.session.commit()

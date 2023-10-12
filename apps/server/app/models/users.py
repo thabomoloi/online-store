@@ -21,7 +21,8 @@ class User(db.Model):
     phone = db.Column(db.String(16), nullable=True)
     role = db.Column(db.Enum(Role), nullable=False, default=Role.Customer)
     password_hash = db.Column(db.String(255), name="password", nullable=False)
-    address = db.relationship("Address", backref="user", lazy=True)
+    addresses = db.relationship("Address", backref="user", lazy=True)
+    reviews = db.relationship("Review", backref="user", lazy=True)
 
     def __init__(self, **kwargs) -> None:
         super(User, self).__init__(**kwargs)
@@ -56,12 +57,12 @@ class Address(db.Model):
     suburb = db.Column(db.String(255))
     city = db.Column(db.String(255), nullable=False)
     postal_code = db.Column(db.String(10), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
 
     def __init__(self, **kwargs) -> None:
         super(Address, self).__init__(**kwargs)
 
-    def to_oneline(self) -> str:
+    def formatted(self) -> str:
         """Converts the current Address object to one line separated by commas."""
         address_attributes = [
             self.street,
