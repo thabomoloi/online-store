@@ -22,6 +22,7 @@ class User(db.Model):
     role = db.Column(db.Enum(Role), nullable=False, default=Role.Customer)
     password_hash = db.Column(db.String(255), name="password", nullable=False)
     addresses = db.relationship("Address", backref="user", lazy=True)
+    cart = db.relationship("Cart", uselist=False, backref="user", lazy=True)
     reviews = db.relationship("Review", backref="user", lazy=True)
 
     def __init__(self, **kwargs) -> None:
