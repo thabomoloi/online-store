@@ -43,4 +43,10 @@ class TestCartItemModel(BaseTestCase):
         db.session.add(cart_item)
         db.session.commit()
         self.assertIsNotNone(cart_item.id)
-        
+    
+    def test_create_cart_item_null_data(self):
+        cart_item = CartItem()
+        db.session.add(cart_item)
+        with self.assertRaises(IntegrityError):
+            db.session.commit()
+            
