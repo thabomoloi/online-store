@@ -1,27 +1,12 @@
 {
   "name": "online-store",
   "version": "1.0.0",
-  "description": "An ecommerce store built with ReactJS and Flask",
+  "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: No tests found\""
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/thabomcodes/online-store.git"
-  },
-  "keywords": [
-    "ecommerce",
-    "reactjs",
-    "flask",
-    "nodejs",
-    "javscript",
-    "tailwindcss"
-  ],
-  "author": "Thabo Vincent Moloi",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/thabomcodes/online-store/issues"
-  },
-  "homepage": "https://github.com/thabomcodes/online-store#readme"
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }
