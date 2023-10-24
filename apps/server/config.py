@@ -6,6 +6,8 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 class Config:
+    JWT_TOKEN_LOCATION = ["cookies"]
+    JWT_SECRET_KEY = "super-secret"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     @classmethod
@@ -20,6 +22,7 @@ class Config:
 
 class DevelopmentConfig(Config):
     DEBUG = True
+    JWT_COOKIE_SECURE = False
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         "DEV_DATABASE_URL", "sqlite:///" + os.path.join(basedir, "store-dev.db")
     )
@@ -27,12 +30,14 @@ class DevelopmentConfig(Config):
 
 class TestingConfig(Config):
     TESTING = True
+    JWT_COOKIE_SECURE = False
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         "TEST_DATABASE_URL", "sqlite:///" + os.path.join(basedir, "store-test.db")
     )
 
 
 class ProductionConfig(Config):
+    JWT_COOKIE_SECURE = True
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         "DATABASE_URL", "sqlite:///" + os.path.join(basedir, "store.db")
     )

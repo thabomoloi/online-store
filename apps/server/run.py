@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from flask import Flask
-
+from app.models import db, User
 from app import create_app
 
 load_dotenv()
@@ -21,4 +21,15 @@ def test() -> None:
 
 
 if __name__ == "__main__":
+    with app.app_context():
+        db.drop_all()
+        db.create_all()
+        user = User(
+                first_name="John",
+                last_name="Doe",
+                email="john.doe@example.com",
+                password="password123",
+            )
+        db.session.add(user)
+        db.session.commit()
     app.run(debug=True)
