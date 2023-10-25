@@ -1,13 +1,16 @@
 from flask import jsonify, request
-from flask_cors import cross_origin
 from flask_restx import Resource, Namespace, fields
 from flask_jwt_extended import (
     create_access_token,
+    create_refresh_token,
+    get_jwt_identity,
+    jwt_required,
     set_access_cookies,
     unset_jwt_cookies,
 )
 
-from app.extensions import jwt, cors
+from .models.auth_models import login_model, profile_model, token_model
+from app.extensions import jwt
 from app.models.users import User
 
 auth_ns = Namespace("auth", description="Operations for authentication")
@@ -32,24 +35,27 @@ def user_lookup_callback(_jwt_header, jwt_data):
 
 @auth_ns.route("/login")
 class LoginResource(Resource):
+    @auth_ns.expect(login_model)
+    @auth_ns.marshal_with(token_model, envelope="data")
     def post(self):
-        email = "john.doe@example.com"
-        password = "password123"
+        """Log in to the server."""
+        email: str = auth_ns.payload.get("email")
+        password: str = auth_ns.payload.get("password")
         user: User = User.query.filter_by(email=email).one_or_none()
         if not user or not user.verify_password(password):
-            return {"msg": "Invalid login"}, 401
+            return {"message": "Invalid login"}, 401
 
-        response = jsonify({"msg": "Login successful"})
         access_token = create_access_token(identity=user)
-        set_access_cookies(response, access_token)
-        csrf_access_token = request.cookies.get("csrf_access_token")
+        refresh_token = create_refresh_token(identity=user)
+        # create_access_token(identity, fresh=datetime.timedelta(minutes=15))
 
-        return response
+        return dict(jwt_access_token=access_token, jwt_refresh_token=refresh_token)
 
 
-@auth_ns.route("/logout")
-class LogoutResource(Resource):
+@auth_ns.route("/refresh")
+@jwt_required(refresh=True)
+class RefreshTokenResource(Resource):
     def post(self):
-        response = jsonify({"msg": "Logout successful"})
-        unset_jwt_cookies(response)
-        return response
+        identity = get_jwt_identity()
+        access_token = create_access_token(identity=identity, fresh=False)
+        return dict(jwt_access_token=access_token)
