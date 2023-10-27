@@ -1,17 +1,23 @@
+from datetime import datetime, timezone, timedelta
 from flask import jsonify, request
 from flask_restx import Resource, Namespace, fields
 from flask_jwt_extended import (
     create_access_token,
     create_refresh_token,
-    get_jwt_identity,
+    get_current_user,
+    get_jwt,
     jwt_required,
-    set_access_cookies,
-    unset_jwt_cookies,
 )
 
-from .models.auth_models import login_model, profile_model, token_model
+from .models.auth_models import (
+    login_model,
+    profile_model,
+    token_model,
+)
 from app.extensions import jwt
+from app.models import db
 from app.models.users import User
+from app.models.auth import TokenBlocklist
 
 auth_ns = Namespace("auth", description="Operations for authentication")
 
@@ -25,7 +31,7 @@ def user_identity_lookup(user: User):
 
 
 @jwt.user_lookup_loader
-def user_lookup_callback(_jwt_header, jwt_data):
+def user_lookup_callback(_jwt_header, jwt_data) -> User | None:
     """Callback function that loads a user from your database whenever
     a protected route is accessed.
     """
@@ -33,10 +39,18 @@ def user_lookup_callback(_jwt_header, jwt_data):
     return User.query.filter_by(id=identity).one_or_none()
 
 
+@jwt.token_in_blocklist_loader
+def check_if_token_revoked(jwt_header, jwt_payload: dict) -> bool:
+    """Callback function to check if a JWT exists in the database blocklist."""
+    jti = jwt_payload["jti"]
+    token = db.session.query(TokenBlocklist.id).filter_by(jti=jti).scalar()
+    return token is not None
+
+
 @auth_ns.route("/login")
 class LoginResource(Resource):
     @auth_ns.expect(login_model)
-    @auth_ns.marshal_with(token_model, envelope="data")
+    @auth_ns.marshal_with(token_model, envelope="tokens", skip_none=True)
     def post(self):
         """Log in to the server."""
         email: str = auth_ns.payload.get("email")
@@ -45,17 +59,32 @@ class LoginResource(Resource):
         if not user or not user.verify_password(password):
             return {"message": "Invalid login"}, 401
 
-        access_token = create_access_token(identity=user)
+        access_token = create_access_token(identity=user, fresh=timedelta(minutes=15))
         refresh_token = create_refresh_token(identity=user)
-        # create_access_token(identity, fresh=datetime.timedelta(minutes=15))
 
         return dict(jwt_access_token=access_token, jwt_refresh_token=refresh_token)
 
 
+@auth_ns.route("/logout")
+class LogoutResource(Resource):
+    @jwt_required(verify_type=False)
+    def delete(self):
+        token = get_jwt()
+        jti = token["jti"]
+        ttype = token["type"]
+        now = datetime.now(timezone.utc)
+        db.session.add(TokenBlocklist(jti=jti, type=ttype, created_at=now))
+        db.session.commit()
+        return jsonify(message=f"{ttype.capitalize()} token successfully revoked")
+
+
 @auth_ns.route("/refresh")
-@jwt_required(refresh=True)
+@auth_ns.header("Authorization")
 class RefreshTokenResource(Resource):
+    @jwt_required(refresh=True)
+    @auth_ns.marshal_with(token_model, envelope="tokens", skip_none=True)
+    @auth_ns.doc(security="access_token")
     def post(self):
-        identity = get_jwt_identity()
-        access_token = create_access_token(identity=identity, fresh=False)
+        """Refresh the access token"""
+        access_token = create_access_token(identity=get_current_user(), fresh=False)
         return dict(jwt_access_token=access_token)
