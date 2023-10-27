@@ -1,5 +1,5 @@
 from flask_restx import Model, fields, Resource
-from .. import api
+from app.api import api
 
 
 login_model = api.model(
@@ -18,6 +18,7 @@ token_model = api.model(
         "jwt_refresh_token": fields.String,
     },
 )
+
 
 profile_model = api.model(
     "Profile",
