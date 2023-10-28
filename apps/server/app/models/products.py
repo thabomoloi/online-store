@@ -1,10 +1,11 @@
+import uuid
 from app.models import db
 from datetime import datetime
 
 
 class Product(db.Model):
     __tablename__ = "products"
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String, primary_key=True, default=lambda: str(uuid.uuid4()))
     code = db.Column(db.String(16), unique=True, nullable=False)
     name = db.Column(db.String(128), nullable=False)
     description = db.Column(db.Text)
@@ -37,7 +38,7 @@ class Product(db.Model):
 
 class Category(db.Model):
     __tablename__ = "categories"
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String, primary_key=True, default=lambda: str(uuid.uuid4()))
     name = db.Column(db.String(128), nullable=False)
     products = db.relationship("Product", backref="category", lazy=True)
 
@@ -47,7 +48,7 @@ class Category(db.Model):
 
 class Review(db.Model):
     __tablename__ = "reviews"
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String, primary_key=True, default=lambda: str(uuid.uuid4()))
     rating = db.Column(db.Integer, nullable=False)
     comment = db.Column(db.Text)
     date = db.Column(db.Date, nullable=False, default=datetime.utcnow)
