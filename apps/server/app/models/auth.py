@@ -1,10 +1,11 @@
+import uuid
 from flask_jwt_extended import get_current_user
 from sqlalchemy import func
 from app.models import db
 
 
 class TokenBlocklist(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String, primary_key=True, default=lambda: str(uuid.uuid4()))
     jti = db.Column(db.String(36), nullable=False, index=True)
     type = db.Column(db.String(16), nullable=False)
     created_at = db.Column(db.DateTime, server_default=func.now(), nullable=False)
