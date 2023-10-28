@@ -2,6 +2,7 @@ from flask_restx import Model, fields, Resource
 from app.api import api
 
 
+########## Models for auth ############
 login_model = api.model(
     "Login",
     {
