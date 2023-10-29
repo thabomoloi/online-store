@@ -1,7 +1,21 @@
+from app.models.users import User
 from tests import BaseTestCase
 from app.models import db
 from app.models.products import Product, Category, Review
 from sqlalchemy.exc import IntegrityError
+
+
+class ProductsBaseTestCase(BaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.user = User(
+            first_name="John",
+            last_name="Doe",
+            email="john.doe@example.com",
+            password="password123",
+        )
+        db.session.add(self.user)
+        db.session.commit()
 
 
 class TestCategoryModel(BaseTestCase):
@@ -22,7 +36,7 @@ class TestCategoryModel(BaseTestCase):
             db.session.commit()
 
 
-class TestReviewModel(BaseTestCase):
+class TestReviewModel(ProductsBaseTestCase):
     def test_review_model(self):
         product = Product(
             code="ABC123",
@@ -49,7 +63,7 @@ class TestReviewModel(BaseTestCase):
             db.session.commit()
 
 
-class TestProductModel(BaseTestCase):
+class TestProductModel(ProductsBaseTestCase):
     def test_product_model(self):
         product = Product(
             code="ABC123",

@@ -18,7 +18,7 @@ class User(db.Model):
     id = db.Column(db.String, primary_key=True, default=lambda: str(uuid.uuid4()))
     first_name = db.Column(db.String(128), nullable=False)
     last_name = db.Column(db.String(128), nullable=False)
-    email = db.Column(db.String(255), nullable=False)
+    email = db.Column(db.String(255), nullable=False, unique=True)
     phone = db.Column(db.String(16), nullable=True)
     role = db.Column(db.Enum(Role), nullable=False, default=Role.Customer)
     password_hash = db.Column(db.String(255), name="password", nullable=False)

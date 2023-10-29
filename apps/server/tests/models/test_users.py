@@ -58,8 +58,36 @@ class TestUserModel(BaseTestCase):
         with self.assertRaises(IntegrityError):
             db.session.commit()
 
+    def test_unique_email(self):
+        user1 = User(
+            first_name="John",
+            last_name="Doe",
+            email="john.doe@example.com",
+            role=Role.Administrator,
+        )
+        user2 = User(
+            first_name="John",
+            last_name="Doe Junior",
+            email="john.doe@example.com",
+            role=Role.Administrator,
+        )
+        db.session.add_all([user1, user2])
+        with self.assertRaises(IntegrityError):
+            db.session.commit()
+
 
 class TestAddressModel(BaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.user = User(
+            first_name="John",
+            last_name="Doe",
+            email="john.doe@example.com",
+            password="password123",
+        )
+        db.session.add(self.user)
+        db.session.commit()
+
     def test_create_address(self):
         address = Address(
             receipient_name="John Doe",
@@ -124,13 +152,7 @@ class TestAddressModel(BaseTestCase):
             city="City",
             postal_code="1234",
         )
-        address.user = User(  # type: ignore
-            first_name="John",
-            last_name="Doe",
-            email="john.doe@example.com",
-            role=Role.Administrator,
-            password="password123",
-        )
+        address.user = self.user
 
         db.session.add(address)
         db.session.commit()

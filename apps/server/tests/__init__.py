@@ -10,15 +10,6 @@ class BaseTestCase(unittest.TestCase):
         self.app_context.push()
         db.create_all()
 
-        self.user = User(
-            first_name="John",
-            last_name="Doe",
-            email="john.doe@example.com",
-            password="password123",
-        )
-        db.session.add(self.user)
-        db.session.commit()
-
     def tearDown(self):
         db.session.remove()
         db.drop_all()
