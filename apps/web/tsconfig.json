@@ -20,6 +20,8 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
 
+    /* Add types */
+    "types": ["node"],
     /** Resolve paths */
     "baseUrl": ".",
     "paths": {
