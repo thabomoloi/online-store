@@ -9,33 +9,41 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { toast } from "@/components/ui/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "@radix-ui/react-tooltip";
 import { Eye, EyeOff } from "lucide-react";
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
-const signUpFormSchema = z.object({
-	firstName: z.string({
-		required_error: "Please enter your first name",
-	}),
-	lastName: z.string({
-		required_error: "Please enter your last name",
-	}),
-	email: z
-		.string({
-			required_error: "Please enter your email",
-		})
-		.email(),
-	phone: z
-		.string()
-		.regex(/^0\d{9}$/, "Invalid phone number")
-		.optional(),
-	password: z
-		.string({ required_error: "Please enter a password" })
-		.min(8, "Password must be at least 8 characters"),
-});
+const signUpFormSchema = z
+	.object({
+		firstName: z.string({
+			required_error: "Please enter your first name",
+		}),
+		lastName: z.string({
+			required_error: "Please enter your last name",
+		}),
+		email: z
+			.string({
+				required_error: "Please enter your email",
+			})
+			.email(),
+		phone: z
+			.string()
+			.regex(/^0\d{9}$/, "Invalid phone number")
+			.optional(),
+		password: z
+			.string({ required_error: "Please enter a password" })
+			.min(8, "Password must be at least 8 characters"),
+	})
+	.required({ email: true, firstName: true, lastName: true, password: true });
 
 type SignUpFormValues = z.infer<typeof signUpFormSchema>;
 
@@ -71,6 +79,10 @@ export default function SignUpForm() {
 				</pre>
 			),
 		});
+		{
+			JSON.stringify(data, null, 2);
+		}
+		console.log(JSON.stringify(data, null, 2));
 	};
 
 	const checkPassword = (password: string) => {
@@ -168,15 +180,33 @@ export default function SignUpForm() {
 					name="password"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>
-								<div className="flex items-center gap-4 sm:gap-8 md:gap-16">
-									<span>Password</span>
+							<div className="flex items-center gap-4 justify-between">
+								<FormLabel>Password</FormLabel>
+								<div className="flex flex-nowrap gap-2 items-center">
 									<Progress
 										value={passwordStrength.value}
 										color={passwordStrength.color}
+										className="w-48"
 									/>
+									<TooltipProvider>
+										<Tooltip>
+											<TooltipTrigger
+												type="button"
+												className="text-white font-bold bg-black rounded-full w-6"
+											>
+												?
+											</TooltipTrigger>
+											<TooltipContent className="w-72 bg-black/75 rounded text-white p-4">
+												It is recommended to use a mix
+												of lowercase and uppercase
+												letters, numbers and special
+												symbols for a stronger password.
+											</TooltipContent>
+										</Tooltip>
+									</TooltipProvider>
 								</div>
-							</FormLabel>
+							</div>
+
 							<FormControl>
 								<div className="flex items-center">
 									<Input
@@ -196,15 +226,30 @@ export default function SignUpForm() {
 											}
 										}}
 									/>
-									<button
-										className="px-2 py-1 -ml-10"
-										type="button"
-										onClick={() =>
-											toggleVisibility((prev) => !prev)
-										}
-									>
-										{passwordVisible ? <EyeOff /> : <Eye />}
-									</button>
+									<TooltipProvider>
+										<Tooltip>
+											<TooltipTrigger
+												type="button"
+												className="px-2 py-1 -ml-10"
+												onClick={() =>
+													toggleVisibility(
+														(prev) => !prev
+													)
+												}
+											>
+												{passwordVisible ? (
+													<EyeOff />
+												) : (
+													<Eye />
+												)}
+											</TooltipTrigger>
+											<TooltipContent>
+												{passwordVisible
+													? "Hide password"
+													: "Show password"}
+											</TooltipContent>
+										</Tooltip>
+									</TooltipProvider>
 								</div>
 							</FormControl>
 							<FormMessage />
