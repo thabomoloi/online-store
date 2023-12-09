@@ -21,7 +21,7 @@
     "noFallthroughCasesInSwitch": true,
 
     /* Add types */
-    "types": ["node"],
+    "types": ["node", "@testing-library/jest-dom"],
     /** Resolve paths */
     "baseUrl": ".",
     "paths": {
