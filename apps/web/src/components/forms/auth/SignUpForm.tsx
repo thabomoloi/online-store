@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { toast } from "@/components/ui/use-toast";
+import { useAuth } from "@/context/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
 	Tooltip,
@@ -24,30 +25,31 @@ import * as z from "zod";
 
 const signUpFormSchema = z
 	.object({
-		firstName: z.string({
-			required_error: "Please enter your first name",
-		}),
-		lastName: z.string({
-			required_error: "Please enter your last name",
-		}),
+		first_name: z.string().min(1, { message: "First name is required" }),
+		last_name: z.string().min(1, { message: "Last name is required" }),
 		email: z
-			.string({
-				required_error: "Please enter your email",
-			})
-			.email(),
-		phone: z
 			.string()
-			.regex(/^0\d{9}$/, "Invalid phone number")
-			.optional(),
+			.min(1, { message: "Email is required" })
+			.email("Invalid email address"),
+		phone: z.string().optional(),
 		password: z
 			.string({ required_error: "Please enter a password" })
 			.min(8, "Password must be at least 8 characters"),
 	})
-	.required({ email: true, firstName: true, lastName: true, password: true });
+	.refine(
+		(data) => {
+			const regExp = /^0\d{9}$/;
+			if (data.phone) return regExp.test(data.phone);
+			return true;
+		},
+		{ path: ["phone"], message: "Invalid phone number" }
+	);
 
 type SignUpFormValues = z.infer<typeof signUpFormSchema>;
 
 export default function SignUpForm() {
+	const auth = useAuth();
+
 	const [passwordVisible, toggleVisibility] = useState<boolean>(false);
 	const passwordRef = useRef<HTMLInputElement>(null);
 	const [passwordStrength, setPasswordStrength] = useState<{
@@ -58,31 +60,21 @@ export default function SignUpForm() {
 	const form = useForm<SignUpFormValues>({
 		resolver: zodResolver(signUpFormSchema),
 		defaultValues: {
-			firstName: "",
-			lastName: "",
+			first_name: "",
+			last_name: "",
 			email: "",
 			phone: "",
 			password: "",
 		},
-		mode: "onChange",
 	});
 
-	const onSubmit = (data: SignUpFormValues): void => {
+	const onSubmit = async (data: SignUpFormValues): Promise<void> => {
+		const msg = await auth.register(data);
+
 		toast({
-			title: "Submitted data",
-			description: (
-				<pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-					<code className="text-white">
-						{JSON.stringify(data, null, 2)}
-					</code>
-					~{" "}
-				</pre>
-			),
+			title: "New Account",
+			description: <p>{msg}</p>,
 		});
-		{
-			JSON.stringify(data, null, 2);
-		}
-		console.log(JSON.stringify(data, null, 2));
 	};
 
 	const checkPassword = (password: string) => {
@@ -90,19 +82,15 @@ export default function SignUpForm() {
 		let colors = ["#ff0000", "#ff6600", "#ffcc00", "#ccff00", "#00ff00"];
 
 		if (password.match(/(?=.*\d)+/)) {
-			// check for a number from 0-9
 			strength += 1;
 		}
 		if (password.match(/(?=.*[a-z])(?=.*[A-Z])+/)) {
-			// lower case from a-z, upper case from A-Z
 			strength += 1;
 		}
 		if (password.match(/(?=.*[!@#$%^&*()~<>?])+/)) {
-			// check for special character
 			strength += 1;
 		}
 		if (password.length > 8) {
-			// check for at least 10 characters
 			strength += 1;
 		}
 
@@ -121,7 +109,7 @@ export default function SignUpForm() {
 			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
 				<FormField
 					control={form.control}
-					name="firstName"
+					name="first_name"
 					render={({ field }) => (
 						<FormItem>
 							<FormLabel>First Name</FormLabel>
@@ -134,7 +122,7 @@ export default function SignUpForm() {
 				/>
 				<FormField
 					control={form.control}
-					name="lastName"
+					name="last_name"
 					render={({ field }) => (
 						<FormItem>
 							<FormLabel>Last Name</FormLabel>
@@ -243,7 +231,7 @@ export default function SignUpForm() {
 													<Eye />
 												)}
 											</TooltipTrigger>
-											<TooltipContent>
+											<TooltipContent className="bg-black/75 rounded text-white p-2">
 												{passwordVisible
 													? "Hide password"
 													: "Show password"}
