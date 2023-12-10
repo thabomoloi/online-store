@@ -2,7 +2,7 @@ from flask_restx import Namespace, Resource
 
 from app.models import db
 from app.models.users import User
-from app.api.models import user_model
+from app.api.models.user_models import user_model
 
 users_ns = Namespace("users", description="Operations for users")
 
