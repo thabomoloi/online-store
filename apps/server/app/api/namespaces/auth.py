@@ -13,16 +13,36 @@ from app.models import db
 from app.models.users import User
 from app.models.auth import TokenBlocklist
 
-from app.api.models import (
+
+from app.api.models.auth_models import (
+    authenticated_model, 
     login_model,
     profile_model,
-    token_model,
+    signup_model, 
+    token_model, 
 )
 
+from sqlalchemy.exc import IntegrityError
 
 auth_ns = Namespace("auth", description="Operations for authentication")
 
 
+@auth_ns.route("/signup")
+class SignupResource(Resource):
+    @auth_ns.expect(signup_model)
+    def post(self):
+        keys = ["first_name", "last_name", "email", "phone", "password"]
+        details = dict(list(map(lambda key: (key, auth_ns.payload.get(key)),keys)))
+        user = User(**details)
+        db.session.add(user)
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            return dict(msg="The email already exists"), 400
+        return dict(msg="Account created successfully")
+    
+    
 @auth_ns.route("/login")
 class LoginResource(Resource):
     @auth_ns.expect(login_model)
@@ -84,3 +104,12 @@ class DetailsResource(Resource):
             name=f"{user.first_name.capitalize()} {user.last_name.capitalize()}",
             email=user.email,
         )
+
+@auth_ns.route("/is-authenticated")
+class IsAuthenticatedResource(Resource):
+    @jwt_required(optional=True)
+    @auth_ns.marshal_with(authenticated_model)
+    def get(self):
+        """Check if the current user is authenticated."""
+        user: User = get_current_user()
+        return dict(is_authenticated=(user is not None))
