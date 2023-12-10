@@ -9,19 +9,20 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { toast } from "@/components/ui/use-toast";
-import { useAuth } from "@/context/auth";
-import { zodResolver } from "@hookform/resolvers/zod";
 import {
+	TooltipProvider,
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger,
-} from "@radix-ui/react-tooltip";
+} from "@/components/ui/tooltip";
+import { toast } from "@/components/ui/use-toast";
+import { useAuth } from "@/context/auth";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff } from "lucide-react";
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import PasswordInput from "./components/PasswordInput";
 
 const signUpFormSchema = z
 	.object({
@@ -180,11 +181,11 @@ export default function SignUpForm() {
 										<Tooltip>
 											<TooltipTrigger
 												type="button"
-												className="text-white font-bold bg-black rounded-full w-6"
+												className="text-white font-bold bg-primary rounded-full w-6"
 											>
 												?
 											</TooltipTrigger>
-											<TooltipContent className="w-72 bg-black/75 rounded text-white p-4">
+											<TooltipContent className="w-60">
 												It is recommended to use a mix
 												of lowercase and uppercase
 												letters, numbers and special
@@ -196,49 +197,7 @@ export default function SignUpForm() {
 							</div>
 
 							<FormControl>
-								<div className="flex items-center">
-									<Input
-										{...field}
-										type={
-											passwordVisible
-												? "text"
-												: "password"
-										}
-										ref={passwordRef}
-										autoComplete="current-password"
-										onInput={() => {
-											if (passwordRef.current) {
-												checkPassword(
-													passwordRef.current.value
-												);
-											}
-										}}
-									/>
-									<TooltipProvider>
-										<Tooltip>
-											<TooltipTrigger
-												type="button"
-												className="px-2 py-1 -ml-10"
-												onClick={() =>
-													toggleVisibility(
-														(prev) => !prev
-													)
-												}
-											>
-												{passwordVisible ? (
-													<EyeOff />
-												) : (
-													<Eye />
-												)}
-											</TooltipTrigger>
-											<TooltipContent className="bg-black/75 rounded text-white p-2">
-												{passwordVisible
-													? "Hide password"
-													: "Show password"}
-											</TooltipContent>
-										</Tooltip>
-									</TooltipProvider>
-								</div>
+								<PasswordInput field={field} />
 							</FormControl>
 							<FormMessage />
 						</FormItem>
