@@ -106,7 +106,7 @@ export default function SignUpForm() {
 
 	return (
 		<Form {...form}>
-			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 				<FormField
 					control={form.control}
 					name="first_name"
@@ -244,7 +244,11 @@ export default function SignUpForm() {
 						</FormItem>
 					)}
 				/>
-				<Button type="submit">Create Account</Button>
+				<div>
+					<Button type="submit" className="mt-6">
+						Create Account
+					</Button>
+				</div>
 			</form>
 		</Form>
 	);
