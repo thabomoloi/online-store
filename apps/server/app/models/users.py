@@ -11,6 +11,10 @@ class Role(Enum):
     Customer = "Customer"
     Moderator = "Moderator"
     Administrator = "Administrator"
+    
+    def __str__(self) -> str:
+        return self.name
+    
 
 
 class User(db.Model):
