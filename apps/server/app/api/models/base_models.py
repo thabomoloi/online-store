@@ -1,7 +1,8 @@
-from flask_restx import fields
+from flask_restx import fields, Model
 from app.api import api
 
-base_user_model = api.model(
+
+base_user_model = Model(
     "Base User Model", 
     {
         "first_name": fields.String(
@@ -19,5 +20,25 @@ base_user_model = api.model(
             description="The phone number of the user. This field can be null.",
             example="0712345689",
         ),
+    }
+)
+
+
+error_model = api.model(
+    "Error Response", 
+    {
+        "code": fields.Integer(required=True, description="The HTTP status code."),
+        "description": fields.String(required=True, description="The short description about the response."),
+        "message": fields.String(required=True, description="The error message.")
+    }
+)
+
+
+response_model = api.model(
+    "Response",
+    {
+        "code": fields.Integer(required=True, description="The HTTP status code.", example=200),
+        "description": fields.String(required=True, description="The short description about the response.", example="Success"),
+        "message": fields.String(description="Optional response message.")     
     }
 )
