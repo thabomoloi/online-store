@@ -197,7 +197,7 @@ export default function SignUpForm() {
 					)}
 				/>
 				<div>
-					<Button type="submit" className="mt-6">
+					<Button type="submit" className="mt-6 w-full">
 						Create Account
 					</Button>
 				</div>
