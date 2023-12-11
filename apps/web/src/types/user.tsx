@@ -10,6 +10,10 @@ interface User extends UserDetails {
 	password?: string;
 }
 
+interface LoginDetails {
+	email: string;
+	password: string;
+}
 interface SignUpDetails extends UserDetails {
 	password: string;
 }

@@ -15,11 +15,9 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { toast } from "@/components/ui/use-toast";
 import { useAuth } from "@/context/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff } from "lucide-react";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import PasswordInput from "./components/PasswordInput";
@@ -50,9 +48,6 @@ type SignUpFormValues = z.infer<typeof signUpFormSchema>;
 
 export default function SignUpForm() {
 	const auth = useAuth();
-
-	const [passwordVisible, toggleVisibility] = useState<boolean>(false);
-	const passwordRef = useRef<HTMLInputElement>(null);
 	const [passwordStrength, setPasswordStrength] = useState<{
 		value: number;
 		color?: string;
@@ -70,12 +65,7 @@ export default function SignUpForm() {
 	});
 
 	const onSubmit = async (data: SignUpFormValues): Promise<void> => {
-		const msg = await auth.register(data);
-
-		toast({
-			title: "New Account",
-			description: <p>{msg}</p>,
-		});
+		auth.register(data);
 	};
 
 	const checkPassword = (password: string) => {
@@ -197,7 +187,10 @@ export default function SignUpForm() {
 							</div>
 
 							<FormControl>
-								<PasswordInput field={field} />
+								<PasswordInput
+									field={field}
+									checkPassword={checkPassword}
+								/>
 							</FormControl>
 							<FormMessage />
 						</FormItem>
