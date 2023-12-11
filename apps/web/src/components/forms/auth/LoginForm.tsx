@@ -36,7 +36,7 @@ export default function LoginForm() {
 	});
 
 	const onSubmit = (data: LoginFormValues) => {
-		auth.login(data.email, data.password);
+		auth.login(data);
 	};
 
 	return (
