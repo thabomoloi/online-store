@@ -26,6 +26,7 @@ from app.api.models.auth_models import (
 from sqlalchemy.exc import IntegrityError
 
 from app.api.namespaces import create_response
+from app.exceptions import EmailExistsExcepton, NullPasswordException
 
 auth_ns = Namespace("auth", description="Operations for authentication")
 
@@ -33,28 +34,36 @@ auth_ns = Namespace("auth", description="Operations for authentication")
 @auth_ns.route("/signup")
 class SignupResource(Resource):
     @auth_ns.expect(signup_model)
-    @auth_ns.response(code=201, description="Account created", model=response_model)
+    @auth_ns.response(code=201, description="Created", model=response_model)
     @auth_ns.response(code=400, description="Bad request", model=error_model)
     @auth_ns.response(code=422, description="Unprocessable Entity", model=error_model)
     def post(self):
+        """Create new user account"""
         keys = ["first_name", "last_name", "email", "phone", "password"]
         details = dict(list(map(lambda key: (key, auth_ns.payload.get(key)),keys)))
-        user = User(**details)
-        db.session.add(user)
-
+        
         try:
+            user = User(**details)
+            db.session.add(user)
             db.session.commit()
             response = create_response(
                 code=201, 
                 description="Account created", 
                 message="Your account was created successfully."
             )
-        except IntegrityError:
+        except EmailExistsExcepton:
             db.session.rollback()
             response = create_response(
                 code=400, 
                 description="Bad request", 
                 message="The email address you used already exists. Please login or use a different email address."
+            ) 
+        except (IntegrityError, NullPasswordException):
+            db.session.rollback()
+            response = create_response(
+                code=400, 
+                description="Bad request", 
+                message="Missing some required data."
             ) 
         except:
             db.session.rollback()
@@ -63,7 +72,8 @@ class SignupResource(Resource):
                 description="Internal Server Error",
                 message="Oops! Something went wrong."
             )
-        return response, response["code"]
+        finally:
+            return response, response["code"]
     
 
 @auth_ns.route("/login")

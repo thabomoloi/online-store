@@ -1,9 +1,12 @@
 """Module for defining the tables related to users of the application"""
+import email
 import uuid
 from app.models import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from typing import NoReturn
 from enum import Enum
+
+from app.exceptions import EmailExistsExcepton, NullPasswordException
 
 
 class Role(Enum):
@@ -31,6 +34,9 @@ class User(db.Model):
     reviews = db.relationship("Review", backref="user", lazy=True)
 
     def __init__(self, **kwargs) -> None:
+        email_address = kwargs.get("email")
+        if User.query.filter_by(email=email_address).one_or_none() is not None:
+            raise EmailExistsExcepton("The email address already exists")
         super(User, self).__init__(**kwargs)
 
     @property
@@ -39,9 +45,11 @@ class User(db.Model):
 
     @password.setter
     def password(self, password: str):
+        if password is None:
+            raise NullPasswordException("password must not not be none")
         self.password_hash = generate_password_hash(password)
 
-    def verify_password(self, password: str) -> bool:
+    def verify_password(self, password: str) -> bool | NoReturn:
         """Verifies user's password by checking if the stored
         password hash matches the given password.
 
@@ -51,6 +59,8 @@ class User(db.Model):
         Returns:
             bool: True if the given password matches the password_hash, else returns False
         """
+        if password is None or not isinstance(password, str):
+            raise Exception("password should be a string")
         return check_password_hash(self.password_hash, password)
 
 
