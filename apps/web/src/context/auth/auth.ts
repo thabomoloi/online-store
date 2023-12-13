@@ -11,17 +11,16 @@ class Authentication {
 	static readonly LOGIN_URL = `${AUTH_URL}/login`;
 	static readonly LOGOUT_URL = `${AUTH_URL}/logout`;
 	static readonly SIGNUP_URL = `${AUTH_URL}/signup`;
+	static readonly REFRESH_URL = `${AUTH_URL}/refresh`;
 
-	public static async register(data: SignUpDetails) {
-		const response = await fetch(this.SIGNUP_URL, {
-			method: "post",
+	public static async isAuth(access_token: string | null = null) {
+		const response = await fetch(this.IS_AUTH_URL, {
 			headers: {
-				"Content-Type": "application/json",
+				Authorization: `Bearer ${access_token}`,
 			},
-			body: JSON.stringify({ ...data }),
 		});
-		const responseData = (await response.json()) as ApiResponse;
-		return responseData;
+		const responseData = (await response.json()) as ApiIsAuthResponse;
+		return responseData.data.is_authenticated;
 	}
 
 	public static async login(data: LoginDetails) {
@@ -36,16 +35,6 @@ class Authentication {
 		return responseData;
 	}
 
-	public static async isAuth(access_token: string | null = null) {
-		const response = await fetch(this.IS_AUTH_URL, {
-			headers: {
-				Authorization: `Bearer ${access_token}`,
-			},
-		});
-		const responseData = (await response.json()) as ApiIsAuthResponse;
-		return responseData.data.is_authenticated;
-	}
-
 	public static async logout(access_token: string | null = null) {
 		const response = await fetch(this.LOGOUT_URL, {
 			method: "delete",
@@ -54,6 +43,29 @@ class Authentication {
 			},
 		});
 		const responseData = (await response.json()) as ApiResponse;
+		return responseData;
+	}
+
+	public static async register(data: SignUpDetails) {
+		const response = await fetch(this.SIGNUP_URL, {
+			method: "post",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({ ...data }),
+		});
+		const responseData = (await response.json()) as ApiResponse;
+		return responseData;
+	}
+
+	public static async refreshAccessToken(refresh_token: string | null) {
+		const response = await fetch(this.REFRESH_URL, {
+			method: "post",
+			headers: {
+				Authorization: `Bearer ${refresh_token}`,
+			},
+		});
+		const responseData = (await response.json()) as ApiTokenResponse;
 		return responseData;
 	}
 }
