@@ -47,6 +47,25 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
 		}
 	}, [isLoggedIn, accessToken, refreshToken]);
 
+	useEffect(() => {
+		if (isLoggedIn) {
+			const tokenRefreshInterval = setInterval(async () => {
+				const tokenData = jwt_decode(accessToken);
+				const currentTime = Math.floor(Date.now() / 1000);
+				// check if token expires in 300s (5min)
+				if (tokenData.exp - currentTime < 300) {
+					const responseData =
+						await Authentication.refreshAccessToken(refreshToken);
+					if (responseData.code === 200) {
+						setAccessToken(responseData.data.access_token);
+					}
+				}
+			}, 60000);
+
+			return () => clearInterval(tokenRefreshInterval);
+		}
+	}, [isLoggedIn]);
+
 	const login = async (details: LoginDetails) => {
 		const responseData = await Authentication.login(details);
 		if (responseData.code >= 400) {
@@ -103,4 +122,10 @@ export function useAuth(): Auth {
 		throw new Error("useAuth must be used within an AuthProvider");
 	}
 	return context;
+}
+function jwt_decode(accessToken: Token): { exp: number } {
+	//throw new Error("Function not implemented.");
+	return {
+		exp: Date.now() / 1000 + 120,
+	};
 }
