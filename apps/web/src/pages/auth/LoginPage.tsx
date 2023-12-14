@@ -11,15 +11,27 @@ export default function LoginPage() {
 				"bg-secondary"
 			)}
 		>
-			<div className="flex-grow p-4">
-				<Card className="max-w-md mx-auto">
-					<CardHeader>
-						<h1 className="text-2xl text-center">Welcome Back!</h1>
-					</CardHeader>
-					<CardContent>
-						<LoginForm />
-					</CardContent>
-				</Card>
+			<div className="flex-grow flex flex-col items-center p-4">
+				<div className="w-full max-w-md space-y-4">
+					<Card className="rounded-lg">
+						<CardHeader>
+							<h1 className="text-2xl text-center">
+								Welcome Back!
+							</h1>
+						</CardHeader>
+						<CardContent>
+							<LoginForm />
+						</CardContent>
+					</Card>
+					<div className="w-full bg-gray-300 p-4 rounded-lg text-center">
+						<p className="text-gray-700">
+							Don't have an account?&nbsp;
+							<a href="#" className="text-primary font-semibold">
+								Get Started
+							</a>
+						</p>
+					</div>
+				</div>
 			</div>
 		</div>
 	);

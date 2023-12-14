@@ -9,7 +9,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { useRef, useState } from "react";
 
 interface PasswordInputProps {
-	field?: any;
+	field?: object;
 	checkPassword?: (password: string) => void;
 }
 export default function PasswordInput({
@@ -37,7 +37,7 @@ export default function PasswordInput({
 				<Tooltip>
 					<TooltipTrigger
 						type="button"
-						className="px-2 py-1 -ml-10"
+						className="px-2 py-1 -ml-10 text-gray-500"
 						onClick={() => toggleVisibility((prev) => !prev)}
 					>
 						{visible ? <EyeOff /> : <Eye />}
