@@ -70,7 +70,7 @@ export default function SignUpForm() {
 
 	const checkPassword = (password: string) => {
 		let strength = 0;
-		let colors = ["#ff0000", "#ff6600", "#ffcc00", "#ccff00", "#00ff00"];
+		const colors = ["#ff0000", "#ff6600", "#ffcc00", "#ccff00", "#00ff00"];
 
 		if (password.match(/(?=.*\d)+/)) {
 			strength += 1;

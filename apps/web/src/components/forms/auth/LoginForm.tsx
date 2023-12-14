@@ -60,7 +60,15 @@ export default function LoginForm() {
 					name="password"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>Password</FormLabel>
+							<div className="flex items-center justify-between">
+								<FormLabel>Password</FormLabel>
+								<a
+									href="#forgot"
+									className="text-sm font-semibold text-primary-950 hover:underline"
+								>
+									Forgot?
+								</a>
+							</div>
 							<FormControl>
 								<PasswordInput field={field} />
 							</FormControl>
@@ -70,7 +78,7 @@ export default function LoginForm() {
 				/>
 				<div>
 					<Button type="submit" className="mt-6 w-full">
-						Login
+						LOGIN
 					</Button>
 				</div>
 			</form>
