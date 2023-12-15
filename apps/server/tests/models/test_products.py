@@ -80,8 +80,8 @@ class TestProductModel(ProductsBaseTestCase):
         self.assertIsNotNone(retrieved_product)
         if retrieved_product:
             self.assertEqual(retrieved_product.name, "Test Product")
-            self.assertEqual(retrieved_product.ratings["rate"], 0)  # No reviews added
-            self.assertEqual(retrieved_product.ratings["count"], 0)
+            self.assertEqual(retrieved_product.rating["rate"], 0)  # No reviews added
+            self.assertEqual(retrieved_product.rating["count"], 0)
 
     def test_product_model_null_data(self):
         product = Product()
@@ -126,5 +126,5 @@ class TestProductModel(ProductsBaseTestCase):
         db.session.add(product)
         db.session.commit()
 
-        self.assertEqual(product.ratings["count"], 3)
-        self.assertEqual(round((5 + 3 + 2) / 3, 2), product.ratings["rate"])
+        self.assertEqual(product.rating["count"], 3)
+        self.assertEqual(round((5 + 3 + 2) / 3, 2), product.rating["rate"])
