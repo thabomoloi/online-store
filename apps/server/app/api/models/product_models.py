@@ -79,7 +79,7 @@ category_response_model = response_model.clone(
 )
 
 category_list_response_model = response_model.clone(
-    "Category Response List", {"data": fields.List(fields.Nested(category_model))}
+    "Category List Response", {"data": fields.List(fields.Nested(category_model))}
 )
 
 review_model = api.model(
@@ -118,7 +118,7 @@ review_response_model = response_model.clone(
 )
 
 review_list_response_model = response_model.clone(
-    "Review Response", {"data": fields.List(fields.Nested(review_model))}
+    "Review List Response", {"data": fields.List(fields.Nested(review_model))}
 )
 
 # Register the models
