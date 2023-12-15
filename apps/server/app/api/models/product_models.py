@@ -114,11 +114,11 @@ review_model = api.model(
 )
 
 review_response_model = response_model.clone(
-    "Review Response", {"data": fields.Nested(response_model)}
+    "Review Response", {"data": fields.Nested(review_model)}
 )
 
 review_list_response_model = response_model.clone(
-    "Review Response", {"data": fields.List(fields.Nested(response_model))}
+    "Review Response", {"data": fields.List(fields.Nested(review_model))}
 )
 
 # Register the models
