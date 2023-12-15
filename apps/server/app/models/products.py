@@ -13,7 +13,7 @@ class Product(db.Model):
     name = db.Column(db.String(128), nullable=False)
     image = db.Column(db.String(255))
     description = db.Column(db.Text)
-    price = db.Column(db.Float, nullable=False)
+    price = db.Column(db.Integer, nullable=False)
     stock = db.Column(db.Integer, nullable=False)
     category_id = db.Column(
         db.Integer, db.ForeignKey("categories.id", ondelete="SET NULL")
@@ -24,7 +24,7 @@ class Product(db.Model):
         super(Product, self).__init__(**kwargs)
 
     @property
-    def ratings(self) -> Dict[str, int]:
+    def rating(self) -> Dict[str, int]:
         count = len(self.reviews)
         ratings_sum = (
             db.session.query(func.sum(Review.rate))
