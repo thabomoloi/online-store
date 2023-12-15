@@ -46,7 +46,7 @@ class TestReviewModel(ProductsBaseTestCase):
             stock=100,
         )
         review = Review(
-            rating=5, comment="Great product", product=product, user_id=self.user.id
+            rate=5, comment="Great product", product=product, user_id=self.user.id
         )
         db.session.add(review)
         db.session.commit()
@@ -80,8 +80,8 @@ class TestProductModel(ProductsBaseTestCase):
         self.assertIsNotNone(retrieved_product)
         if retrieved_product:
             self.assertEqual(retrieved_product.name, "Test Product")
-            self.assertEqual(retrieved_product.average_ratings, 0)  # No reviews added
-            self.assertEqual(retrieved_product.reviews_count, 0)
+            self.assertEqual(retrieved_product.ratings["rate"], 0)  # No reviews added
+            self.assertEqual(retrieved_product.ratings["count"], 0)
 
     def test_product_model_null_data(self):
         product = Product()
@@ -117,14 +117,14 @@ class TestProductModel(ProductsBaseTestCase):
             stock=100,
         )
         reviews = [
-            Review(rating=5, comment="Great product", user_id=self.user.id),
-            Review(rating=3, comment="It's okay", user_id=self.user.id),
-            Review(rating=2, comment="Bad product", user_id=self.user.id),
+            Review(rate=5, comment="Great product", user_id=self.user.id),
+            Review(rate=3, comment="It's okay", user_id=self.user.id),
+            Review(rate=2, comment="Bad product", user_id=self.user.id),
         ]
         for review in reviews:
             product.reviews.append(review)
         db.session.add(product)
         db.session.commit()
 
-        self.assertEqual(product.reviews_count, 3)
-        self.assertEqual(round((5 + 3 + 2) / 3, 2), product.average_ratings)
+        self.assertEqual(product.ratings["count"], 3)
+        self.assertEqual(round((5 + 3 + 2) / 3, 2), product.ratings["rate"])
