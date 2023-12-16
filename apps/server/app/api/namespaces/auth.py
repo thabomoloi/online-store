@@ -15,18 +15,17 @@ from app.models.users import User
 from app.models.auth import TokenBlocklist
 
 
-from app.api.models.base_models import error_model, response_model
+from app.api.models.base_models import response_model
 from app.api.models.auth_models import (
     is_authenticated_response_model,
-    login_model,
     profile_response_model,
-    signup_model,
     token_response_model,
 )
 
 from sqlalchemy.exc import IntegrityError
 
-from app.api.namespaces import create_response
+from app.api.namespaces import create_response, create_error_responses
+from app.api.parsers.auth import login_parser, signup_parser
 from app.exceptions import EmailExistsExcepton, NullPasswordException
 
 auth_ns = Namespace("auth", description="Operations for authentication")
@@ -34,29 +33,17 @@ auth_ns = Namespace("auth", description="Operations for authentication")
 
 @auth_ns.route("/signup")
 class SignupResource(Resource):
-    @auth_ns.expect(signup_model)
+    @auth_ns.expect(signup_parser)
     @auth_ns.response(
         code=HTTPStatus.CREATED.value,
         description=HTTPStatus.CREATED.phrase,
         model=response_model,
     )
-    @auth_ns.response(
-        code=HTTPStatus.UNPROCESSABLE_ENTITY.value,
-        description=HTTPStatus.UNPROCESSABLE_ENTITY.phrase,
-        model=error_model,
-    )
-    @auth_ns.response(
-        code=HTTPStatus.INTERNAL_SERVER_ERROR.value,
-        description=HTTPStatus.INTERNAL_SERVER_ERROR.phrase,
-        model=error_model,
-    )
     def post(self):
         """Create new user account"""
-        keys = ["first_name", "last_name", "email", "phone", "password"]
-        details = dict(list(map(lambda key: (key, auth_ns.payload.get(key)), keys)))
-
+        args = signup_parser.parse_args()
         try:
-            user = User(**details)
+            user = User(**args)
             db.session.add(user)
             db.session.commit()
             response = create_response(
@@ -91,26 +78,17 @@ class SignupResource(Resource):
 
 @auth_ns.route("/login")
 class LoginResource(Resource):
-    @auth_ns.expect(login_model)
+    @auth_ns.expect(login_parser)
     @auth_ns.response(
         code=HTTPStatus.OK.value,
         description=HTTPStatus.OK.phrase,
         model=token_response_model,
     )
-    @auth_ns.response(
-        code=HTTPStatus.UNAUTHORIZED.value,
-        description=HTTPStatus.UNAUTHORIZED.phrase,
-        model=error_model,
-    )
-    @auth_ns.response(
-        code=HTTPStatus.UNPROCESSABLE_ENTITY.value,
-        description=HTTPStatus.UNPROCESSABLE_ENTITY.phrase,
-        model=error_model,
-    )
     def post(self):
         """Log in"""
-        email: str = auth_ns.payload.get("email")
-        password: str = auth_ns.payload.get("password")
+        args = login_parser.parse_args()
+        email: str = args.get("email")
+        password: str = args.get("password")
         user: User = User.query.filter_by(email=email).one_or_none()
 
         if not user or not user.verify_password(password):
@@ -145,21 +123,6 @@ class LogoutResource(Resource):
     @auth_ns.response(
         code=HTTPStatus.NO_CONTENT.value, description=HTTPStatus.NO_CONTENT.phrase
     )
-    @auth_ns.response(
-        code=HTTPStatus.UNAUTHORIZED.value,
-        description=HTTPStatus.UNAUTHORIZED.phrase,
-        model=error_model,
-    )
-    @auth_ns.response(
-        code=HTTPStatus.UNPROCESSABLE_ENTITY.value,
-        description=HTTPStatus.UNPROCESSABLE_ENTITY.phrase,
-        model=error_model,
-    )
-    @auth_ns.response(
-        code=HTTPStatus.INTERNAL_SERVER_ERROR.value,
-        description=HTTPStatus.INTERNAL_SERVER_ERROR.phrase,
-        model=error_model,
-    )
     def delete(self):
         """Log out"""
         token = get_jwt()
@@ -188,16 +151,6 @@ class RefreshTokenResource(Resource):
         description=HTTPStatus.OK.phrase,
         model=token_response_model,
     )
-    @auth_ns.response(
-        code=HTTPStatus.UNAUTHORIZED.value,
-        description=HTTPStatus.UNAUTHORIZED.phrase,
-        model=error_model,
-    )
-    @auth_ns.response(
-        code=HTTPStatus.UNPROCESSABLE_ENTITY.value,
-        description=HTTPStatus.UNPROCESSABLE_ENTITY.phrase,
-        model=error_model,
-    )
     def post(self):
         """Refresh the access token"""
         access_token = create_access_token(identity=get_current_user(), fresh=False)
@@ -217,16 +170,6 @@ class DetailsResource(Resource):
         code=HTTPStatus.OK.value,
         description=HTTPStatus.OK.phrase,
         model=profile_response_model,
-    )
-    @auth_ns.response(
-        code=HTTPStatus.UNAUTHORIZED.value,
-        description=HTTPStatus.UNAUTHORIZED.phrase,
-        model=error_model,
-    )
-    @auth_ns.response(
-        code=HTTPStatus.UNPROCESSABLE_ENTITY.value,
-        description=HTTPStatus.UNPROCESSABLE_ENTITY.phrase,
-        model=error_model,
     )
     def get(self):
         """Get current user's name and email."""
@@ -251,11 +194,6 @@ class IsAuthenticatedResource(Resource):
         description=HTTPStatus.OK.phrase,
         model=is_authenticated_response_model,
     )
-    @auth_ns.response(
-        code=HTTPStatus.UNPROCESSABLE_ENTITY.value,
-        description=HTTPStatus.UNPROCESSABLE_ENTITY.phrase,
-        model=error_model,
-    )
     def get(self):
         """Check if the current user is authenticated."""
         user: User = get_current_user()
@@ -266,3 +204,18 @@ class IsAuthenticatedResource(Resource):
             data=dict(is_authenticated=(user is not None)),
         )
         return response, response["code"]
+
+
+# document the error responses
+error_responses = create_error_responses(auth_ns)
+resources = [
+    SignupResource,
+    LoginResource,
+    LogoutResource,
+    RefreshTokenResource,
+    DetailsResource,
+    IsAuthenticatedResource,
+]
+for error_response in error_responses:
+    for resource in resources:
+        error_response(resource)

@@ -1,6 +1,6 @@
 from http import HTTPStatus
 from flask_jwt_extended import jwt_required
-from flask_restx import Namespace, Resource, marshal
+from flask_restx import Namespace, Resource, marshal, reqparse
 
 from app.api.models.base_models import error_model
 from app.api.models.product_models import (
@@ -14,28 +14,14 @@ from app.api.models.product_models import (
     review_response_model,
     review_list_response_model,
 )
-from app.api.namespaces import create_response
+from app.api.namespaces import create_error_responses, create_response
+from app.api.parsers.products import product_parser
 from app.models import db, Product, Category, Review
 
 products_ns = Namespace("products", description="Operations related to products")
 
 
 @products_ns.route("/products")
-@products_ns.response(
-    code=HTTPStatus.UNAUTHORIZED.value,
-    description=HTTPStatus.UNAUTHORIZED.phrase,
-    model=error_model,
-)
-@products_ns.response(
-    code=HTTPStatus.NOT_FOUND.value,
-    description=HTTPStatus.NOT_FOUND.phrase,
-    model=error_model,
-)
-@products_ns.response(
-    code=HTTPStatus.UNPROCESSABLE_ENTITY.value,
-    description=HTTPStatus.UNPROCESSABLE_ENTITY.phrase,
-    model=error_model,
-)
 class ProductListResource(Resource):
     @products_ns.response(
         code=HTTPStatus.OK.value,
@@ -52,24 +38,15 @@ class ProductListResource(Resource):
         )
         return response, response["code"]
 
+    @products_ns.expect(product_parser)
+    def post(self):
+        """Create a new product."""
+        args = product_parser.parse_args()
+        print(args)
+
 
 @products_ns.route("/products/<string:id>")
 @products_ns.doc(params={"id": "The unique identifier for the product."})
-@products_ns.response(
-    code=HTTPStatus.UNAUTHORIZED.value,
-    description=HTTPStatus.UNAUTHORIZED.phrase,
-    model=error_model,
-)
-@products_ns.response(
-    code=HTTPStatus.NOT_FOUND.value,
-    description=HTTPStatus.NOT_FOUND.phrase,
-    model=error_model,
-)
-@products_ns.response(
-    code=HTTPStatus.UNPROCESSABLE_ENTITY.value,
-    description=HTTPStatus.UNPROCESSABLE_ENTITY.phrase,
-    model=error_model,
-)
 class ProductResource(Resource):
     @products_ns.response(
         code=HTTPStatus.OK.value,
@@ -97,21 +74,6 @@ class ProductResource(Resource):
 
 
 @products_ns.route("/categories")
-@products_ns.response(
-    code=HTTPStatus.UNAUTHORIZED.value,
-    description=HTTPStatus.UNAUTHORIZED.phrase,
-    model=error_model,
-)
-@products_ns.response(
-    code=HTTPStatus.NOT_FOUND.value,
-    description=HTTPStatus.NOT_FOUND.phrase,
-    model=error_model,
-)
-@products_ns.response(
-    code=HTTPStatus.UNPROCESSABLE_ENTITY.value,
-    description=HTTPStatus.UNPROCESSABLE_ENTITY.phrase,
-    model=error_model,
-)
 class CategoryListResource(Resource):
     @products_ns.response(
         code=HTTPStatus.OK.value,
@@ -131,21 +93,6 @@ class CategoryListResource(Resource):
 
 @products_ns.route("/categories/<string:id>")
 @products_ns.doc(params={"id": "The unique identifier for the category."})
-@products_ns.response(
-    code=HTTPStatus.UNAUTHORIZED.value,
-    description=HTTPStatus.UNAUTHORIZED.phrase,
-    model=error_model,
-)
-@products_ns.response(
-    code=HTTPStatus.NOT_FOUND.value,
-    description=HTTPStatus.NOT_FOUND.phrase,
-    model=error_model,
-)
-@products_ns.response(
-    code=HTTPStatus.UNPROCESSABLE_ENTITY.value,
-    description=HTTPStatus.UNPROCESSABLE_ENTITY.phrase,
-    model=error_model,
-)
 class CategoryResource(Resource):
     @products_ns.response(
         code=HTTPStatus.OK.value,
@@ -173,21 +120,6 @@ class CategoryResource(Resource):
 
 
 @products_ns.route("/reviews")
-@products_ns.response(
-    code=HTTPStatus.UNAUTHORIZED.value,
-    description=HTTPStatus.UNAUTHORIZED.phrase,
-    model=error_model,
-)
-@products_ns.response(
-    code=HTTPStatus.NOT_FOUND.value,
-    description=HTTPStatus.NOT_FOUND.phrase,
-    model=error_model,
-)
-@products_ns.response(
-    code=HTTPStatus.UNPROCESSABLE_ENTITY.value,
-    description=HTTPStatus.UNPROCESSABLE_ENTITY.phrase,
-    model=error_model,
-)
 class ReviewListResource(Resource):
     @products_ns.response(
         code=HTTPStatus.OK.value,
@@ -207,21 +139,6 @@ class ReviewListResource(Resource):
 
 @products_ns.route("/reviews/<string:id>")
 @products_ns.doc(params={"id": "The unique identifier for the review."})
-@products_ns.response(
-    code=HTTPStatus.UNAUTHORIZED.value,
-    description=HTTPStatus.UNAUTHORIZED.phrase,
-    model=error_model,
-)
-@products_ns.response(
-    code=HTTPStatus.NOT_FOUND.value,
-    description=HTTPStatus.NOT_FOUND.phrase,
-    model=error_model,
-)
-@products_ns.response(
-    code=HTTPStatus.UNPROCESSABLE_ENTITY.value,
-    description=HTTPStatus.UNPROCESSABLE_ENTITY.phrase,
-    model=error_model,
-)
 class ReviewResource(Resource):
     @products_ns.response(
         code=HTTPStatus.OK.value,
@@ -246,3 +163,18 @@ class ReviewResource(Resource):
                 data=marshal(review, review_model),
             )
         return response, response["code"]
+
+
+# document the error responses
+error_responses = create_error_responses(products_ns)
+resources = [
+    ProductListResource,
+    ProductResource,
+    CategoryListResource,
+    CategoryResource,
+    ReviewListResource,
+    ReviewResource,
+]
+for error_response in error_responses:
+    for resource in resources:
+        error_response(resource)
