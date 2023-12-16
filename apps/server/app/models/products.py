@@ -39,6 +39,7 @@ class Category(db.Model):
     __tablename__ = "categories"
     id = db.Column(db.String, primary_key=True, default=lambda: str(uuid.uuid4()))
     name = db.Column(db.String(128), nullable=False)
+    image = db.Column(db.String(255))
     products = db.relationship("Product", backref="category", lazy=True)
 
     def __init__(self, **kwargs):
