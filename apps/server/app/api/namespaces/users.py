@@ -4,15 +4,14 @@ from flask_restx import Namespace, Resource, marshal
 
 from app.models import db
 from app.models.users import User
-from app.api.models.base_models import error_model
 from app.api.models.user_models import (
     user_model,
     user_response_model,
     user_list_response_model,
 )
-from app.api.namespaces import create_response
+from app.api.namespaces import create_error_responses, create_response
 
-users_ns = Namespace("users", description="Operations for users")
+users_ns = Namespace("users", description="Operations related to users")
 
 
 @users_ns.route("/users")
@@ -22,21 +21,6 @@ class UsersListResource(Resource):
         code=HTTPStatus.OK.value,
         description=HTTPStatus.OK.phrase,
         model=user_list_response_model,
-    )
-    @users_ns.response(
-        code=HTTPStatus.UNAUTHORIZED.value,
-        description=HTTPStatus.UNAUTHORIZED.phrase,
-        model=error_model,
-    )
-    @users_ns.response(
-        code=HTTPStatus.NOT_FOUND.value,
-        description=HTTPStatus.NOT_FOUND.phrase,
-        model=error_model,
-    )
-    @users_ns.response(
-        code=HTTPStatus.UNPROCESSABLE_ENTITY.value,
-        description=HTTPStatus.UNPROCESSABLE_ENTITY.phrase,
-        model=error_model,
     )
     def get(self):
         response = create_response(
@@ -57,21 +41,6 @@ class UsersResource(Resource):
         description=HTTPStatus.OK.phrase,
         model=user_response_model,
     )
-    @users_ns.response(
-        code=HTTPStatus.UNAUTHORIZED.value,
-        description=HTTPStatus.UNAUTHORIZED.phrase,
-        model=error_model,
-    )
-    @users_ns.response(
-        code=HTTPStatus.NOT_FOUND.value,
-        description=HTTPStatus.NOT_FOUND.phrase,
-        model=error_model,
-    )
-    @users_ns.response(
-        code=HTTPStatus.UNPROCESSABLE_ENTITY.value,
-        description=HTTPStatus.UNPROCESSABLE_ENTITY.phrase,
-        model=error_model,
-    )
     def get(self, id: str):
         user: User = User.query.get(id)
         if user is None:
@@ -90,3 +59,11 @@ class UsersResource(Resource):
                 data=marshal(user, user_model),
             )
         return response, response["code"]
+
+
+# document the error responses
+error_responses = create_error_responses(users_ns)
+resources = [UsersResource, UsersListResource]
+for error_response in error_responses:
+    for resource in resources:
+        error_response(resource)
