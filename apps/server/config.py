@@ -10,6 +10,7 @@ class Config:
     JWT_SECRET_KEY = "super-secret"
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
+    JWT_ERROR_MESSAGE_KEY = "message"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     @classmethod
