@@ -5,13 +5,14 @@ from sqlalchemy import func
 from app.models import db
 from datetime import datetime
 
+from app.exceptions import ProductCodeExistsException
+
 
 class Product(db.Model):
     __tablename__ = "products"
     id = db.Column(db.String, primary_key=True, default=lambda: str(uuid.uuid4()))
     code = db.Column(db.String(16), unique=True, nullable=False)
     name = db.Column(db.String(128), nullable=False)
-    image = db.Column(db.String(255))
     description = db.Column(db.Text)
     price = db.Column(db.Integer, nullable=False)
     stock = db.Column(db.Integer, nullable=False)
@@ -19,8 +20,12 @@ class Product(db.Model):
         db.Integer, db.ForeignKey("categories.id", ondelete="SET NULL")
     )
     reviews = db.relationship("Review", backref="product", lazy=True)
+    images = db.relationship("ProductImage", backref="product", lazy=True)
 
     def __init__(self, **kwargs):
+        code = kwargs.get("code")
+        if Product.query.filter_by(code=code).one_or_none() is not None:
+            raise ProductCodeExistsException("The product code already exists")
         super(Product, self).__init__(**kwargs)
 
     @property
@@ -33,6 +38,14 @@ class Product(db.Model):
         )
         rate = 0 if ratings_sum is None else round(ratings_sum / count, 2)
         return dict(rate=rate, count=count)
+
+
+class ProductImage(db.Model):
+    __tablename__ = "product_images"
+    id = db.Column(db.String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    url = db.Column(db.String(255))
+    default = db.Column(db.Boolean, default=False, nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey("products.id"), nullable=False)
 
 
 class Category(db.Model):
