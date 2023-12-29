@@ -1,8 +1,36 @@
-from flask_restx import fields
+"""Contains parsers and models associated with `products` namespace resources"""
+
+from flask_restx import fields, reqparse
+from werkzeug.datastructures import FileStorage
+
 from app.api import api
-from .base_models import response_model
 
 
+"""
+    REQUEST PARSERS
+"""
+product_parser = reqparse.RequestParser()
+product_parser.add_argument(name="code", required=True, type=str, location="form")
+product_parser.add_argument(name="name", required=True, type=str, location="form")
+product_parser.add_argument(
+    name="image",
+    required=False,
+    type=FileStorage,
+    location="files",
+)
+product_parser.add_argument(
+    name="description",
+    required=True,
+    type=str,
+    location="form",
+)
+product_parser.add_argument(name="price", required=True, type=int, location="form")
+product_parser.add_argument(name="stock", required=True, type=int, location="form")
+
+
+"""
+    MODELS
+"""
 rating_model = api.model(
     "Rating",
     {
@@ -21,6 +49,30 @@ rating_model = api.model(
     },
 )
 
+product_image_model = api.model(
+    "Product Image",
+    {
+        "id": fields.String(
+            required=True,
+            readonly=True,
+            description="The unique identifier for the product.",
+            example="e26a44aa-4683-4a45-85a4-b2f65112d5ed",
+        ),
+        "default": fields.Boolean(
+            description="Boolean field to represent whether the image is the default product image"
+        ),
+        "url": fields.String(
+            description="The url of the product's image",
+            example="/static/images/products/eggs.jpg",
+        ),
+        "product_id": fields.String(
+            description="The unique identifier for the product.",
+            example="e26a44aa-4683-4a45-85a4-b2f65112d5ed",
+        ),
+    },
+)
+
+
 product_model = api.model(
     "Product",
     {
@@ -34,10 +86,6 @@ product_model = api.model(
             required=True, description="The unique product code.", example="P01234"
         ),
         "name": fields.String(description="The name of the product", example="Eggs"),
-        "image": fields.String(
-            description="The url of the product's image",
-            example="/static/images/products/eggs.jpg",
-        ),
         "description": fields.String(description="The description of the product"),
         "price": fields.Integer(
             description="The price of the product (in cents).", example=12999
@@ -49,16 +97,9 @@ product_model = api.model(
             decription="The unique identifier for the category the product belongs to.",
             example="d3a4f975-eb44-4e1c-8e9c-3be0c6314c91",
         ),
+        "images": fields.List(fields.Nested(product_image_model)),
         "rating": fields.Nested(rating_model),
     },
-)
-
-product_response_model = response_model.clone(
-    "Product Response Model", {"data": fields.Nested(product_model)}
-)
-
-product_list_response_model = response_model.clone(
-    "Product List Response Model", {"data": fields.List(fields.Nested(product_model))}
 )
 
 category_model = api.model(
@@ -74,13 +115,6 @@ category_model = api.model(
     },
 )
 
-category_response_model = response_model.clone(
-    "Category Response", {"data": fields.Nested(category_model)}
-)
-
-category_list_response_model = response_model.clone(
-    "Category List Response", {"data": fields.List(fields.Nested(category_model))}
-)
 
 review_model = api.model(
     "Review",
@@ -112,23 +146,3 @@ review_model = api.model(
         ),
     },
 )
-
-review_response_model = response_model.clone(
-    "Review Response", {"data": fields.Nested(review_model)}
-)
-
-review_list_response_model = response_model.clone(
-    "Review List Response", {"data": fields.List(fields.Nested(review_model))}
-)
-
-# Register the models
-models = [
-    product_response_model,
-    product_list_response_model,
-    category_response_model,
-    category_list_response_model,
-    review_response_model,
-    review_list_response_model,
-]
-for model in models:
-    api.models[model.name] = model

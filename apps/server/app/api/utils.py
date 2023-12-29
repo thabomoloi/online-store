@@ -1,23 +1,14 @@
 from http import HTTPStatus
-from typing import Any, Dict
+from flask_restx import Namespace, fields
 
-from flask_restx import Namespace
+from app.api import api
 
-from app.api.models.base_models import error_model
-
-
-def create_response(
-    code: int, description: str, message, data: Any = None
-) -> Dict[str, Any]:
-    response = {"code": code, "description": description, "message": message}
-    if data is not None:
-        response["data"] = data
-    return response
+message_model = api.model("Message", {"message": fields.String})
 
 
 def make_error_response(namespace: Namespace, status=HTTPStatus.INTERNAL_SERVER_ERROR):
     return namespace.response(
-        code=status.value, description=status.phrase, model=error_model
+        code=status.value, description=status.phrase, model=message_model
     )
 
 
