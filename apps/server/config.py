@@ -13,6 +13,10 @@ class Config:
     JWT_ERROR_MESSAGE_KEY = "message"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    UPLOADED_PHOTOS_DEST = "static/images"
+
+    MAX_CONTENT_LENGTH = 1024 * 1024 * 1000
+
     @classmethod
     def init_app(cls, app: Flask):
         """Initialize the Flask app with this configuration.

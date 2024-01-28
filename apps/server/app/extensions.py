@@ -2,6 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_restx import Api
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
+from flask_uploads import UploadSet, IMAGES
 
 db = SQLAlchemy()
 
@@ -17,3 +18,5 @@ api = Api(
 )
 jwt = JWTManager()
 cors = CORS()
+
+photos = UploadSet("photos", IMAGES)
